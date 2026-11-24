@@ -25,7 +25,6 @@ dist/
 .types/
 # Tailwind CLI output (mise run css), from assets/styles/main.css.
 /assets/styles/tailwind.css
-.wrangler/
 .hugo_build.lock
 .DS_Store
 Thumbs.db
