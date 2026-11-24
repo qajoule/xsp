@@ -24,6 +24,10 @@ chmod +x "${mise}"
 
 # The build runs from a fresh clone, so trust this checkout's mise.toml.
 export MISE_TRUSTED_CONFIG_PATHS="${PWD}"
+# The checkout sits under HOME, and the build image's ~/.tool-versions lists
+# asdf plugins that mise cannot resolve (dart-sass-embedded). Read only this
+# checkout's config, not the config files in the directories above it.
+export MISE_CEILING_PATHS="$(dirname "${PWD}")"
 # Take every download URL from mise.lock instead of the GitHub API, which
 # rate-limits the shared build machines.
 export MISE_LOCKED=1
