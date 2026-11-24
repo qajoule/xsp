@@ -35,8 +35,10 @@ export function formatNumber(value: number): string {
   return value.toLocaleString("ja-JP");
 }
 
+// Tooltip text in ECharts rich text: "{b|...}" uses the bold style that
+// tooltip() defines.
 export function formatHbarTooltip(name: unknown, value: number, unit = ""): string {
-  return `${escapeHtml(name)}<br><b>${formatNumber(value)}</b>${unit}`;
+  return `${String(name ?? "")}\n{b|${formatNumber(value)}}${unit}`;
 }
 
 function record(value: unknown): Record<string, any> {
@@ -89,18 +91,25 @@ function palette(): Record<string, any> {
   };
 }
 
+// ECharts builds HTML tooltips from markup with inline style attributes, which
+// the CSP (style-src 'self') blocks. Draw every tooltip on the chart canvas
+// instead, so no HTML is inserted into the page.
+function tooltip(theme: Record<string, any>, options: Record<string, any> = {}): Record<string, any> {
+  return {
+    renderMode: "richText",
+    backgroundColor: theme.surface,
+    borderColor: theme.grid,
+    textStyle: { color: theme.ink, fontSize: 12, rich: { b: { fontWeight: "bold" } } },
+    confine: true,
+    ...options,
+  };
+}
 function base(theme: Record<string, any>): Record<string, any> {
   return {
     backgroundColor: "transparent",
     textStyle: { fontFamily: "system-ui,-apple-system,Segoe UI,Meiryo,sans-serif" },
     grid: { left: 8, right: 16, top: 14, bottom: 8, containLabel: true },
-    tooltip: {
-      trigger: "item",
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink, fontSize: 12 },
-      confine: true,
-    },
+    tooltip: tooltip(theme, { trigger: "item" }),
   };
 }
 function axisText(theme: Record<string, any>): Record<string, any> {
@@ -135,16 +144,12 @@ function hbar(values: Row[], limit: number, theme: Record<string, any>, unit: st
   const data = values.slice(0, limit).reverse();
   return {
     ...base(theme),
-    tooltip: {
+    tooltip: tooltip(theme, {
       trigger: "axis",
       axisPointer: { type: "shadow" },
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink, fontSize: 12 },
-      confine: true,
       formatter: (parameters: Array<{ name: string; value: number }>) =>
         formatHbarTooltip(parameters[0].name, parameters[0].value, unit),
-    },
+    }),
     grid: { left: 8, right: 22, top: 8, bottom: 8, containLabel: true },
     xAxis: {
       type: "value",
@@ -176,14 +181,7 @@ function vbar(
 ): Record<string, any> {
   return {
     ...base(theme),
-    tooltip: {
-      trigger: "axis",
-      axisPointer: { type: "shadow" },
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink, fontSize: 12 },
-      confine: true,
-    },
+    tooltip: tooltip(theme, { trigger: "axis", axisPointer: { type: "shadow" } }),
     xAxis: {
       type: "category",
       data: categories,
@@ -209,13 +207,7 @@ function lines(
   const multi = series.length > 1;
   return {
     ...base(theme),
-    tooltip: {
-      trigger: "axis",
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink, fontSize: 12 },
-      confine: true,
-    },
+    tooltip: tooltip(theme, { trigger: "axis" }),
     legend: multi ? { top: 0, textStyle: { color: theme.ink2, fontSize: 12 }, icon: "roundRect" } : undefined,
     grid: { left: 8, right: 16, top: multi ? 30 : 14, bottom: 8, containLabel: true },
     xAxis: {
@@ -312,14 +304,11 @@ export function renderCharts(data: AnalysisData): void {
 
   chart("c_breakdown", {
     ...base(theme),
-    tooltip: {
+    tooltip: tooltip(theme, {
       trigger: "item",
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink },
       formatter: (parameter: Record<string, any>) =>
-        `${parameter.name}<br><b>${formatNumber(Number(parameter.value))}</b> (${parameter.percent}%)`,
-    },
+        `${parameter.name}\n{b|${formatNumber(Number(parameter.value))}} (${parameter.percent}%)`,
+    }),
     legend: { bottom: 0, textStyle: { color: theme.ink2, fontSize: 12 }, icon: "roundRect" },
     series: [{
       type: "pie",
@@ -380,12 +369,7 @@ export function renderCharts(data: AnalysisData): void {
   chart("c_wday", vbar(byWeekday.map((item) => item.day), byWeekday.map((item) => item.count), theme));
   chart("c_heat", {
     ...base(theme),
-    tooltip: {
-      position: "top",
-      backgroundColor: theme.surface,
-      borderColor: theme.grid,
-      textStyle: { color: theme.ink, fontSize: 12 },
-    },
+    tooltip: tooltip(theme, { position: "top" }),
     grid: { left: 8, right: 12, top: 10, bottom: 52, containLabel: true },
     xAxis: {
       type: "category",
