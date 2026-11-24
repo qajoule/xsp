@@ -38,7 +38,7 @@ Page code and styles are in `assets/` and go through Hugo's asset pipeline, whic
 
 ## Deployment
 
-Build with `mise run build` and serve `dist/` through Cloudflare Pages. The intended project name is `xself`.
+The site is served at https://xself.pages.dev/ by the Cloudflare Pages project `xself`, which is connected to this repository. A push to `main` deploys to production, and every pull request gets a preview URL. The project builds with `bash tools/pages-build.sh` into `dist/`: the script installs a pinned mise, then the tools from `mise.lock`, and runs `mise run check:dist`, so a build whose `dist/` fails the check is not deployed.
 
 ## Privacy
 
