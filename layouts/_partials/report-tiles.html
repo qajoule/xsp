@@ -1,0 +1,28 @@
+{{- /*
+  The status tiles at the top of the report, drawn at build time.
+  Params: overview (the "overview" of an analysis, such as data/sample.json),
+  copy (the "tiles" table of data/content.toml).
+  The markup and number formats match renderOverview in assets/app/charts.ts,
+  which draws the tiles in the browser: counts get thousands separators,
+  averages print as they are, and a tile with an empty sub text has no sub line.
+*/ -}}
+{{- $o := .overview -}}
+{{- $t := .copy -}}
+{{- $num := dict -}}
+{{- range slice "n_total" "n_original" "n_reply" "n_retweet" "active_days" "n_like" "n_following" "n_follower" "n_grok_chat" "n_block" "n_mute" -}}
+  {{- $num = merge $num (dict . (lang.FormatNumber 0 (index $o . | default 0))) -}}
+{{- end -}}
+{{- $tiles := slice
+  (slice $t.total.label (index $num "n_total")
+    ($t.total.sub | strings.ReplacePairs "{orig}" (index $num "n_original") "{reply}" (index $num "n_reply") "{rt}" (index $num "n_retweet")))
+  (slice $t.days.label (printf "%s日" (index $num "active_days"))
+    ($t.days.sub | strings.ReplacePairs "{avg}" (string ($o.avg_per_day | default 0))))
+  (slice $t.likes.label (index $num "n_like") $t.likes.sub)
+  (slice $t.avgfav.label (string ($o.avg_favorite | default 0)) $t.avgfav.sub)
+  (slice $t.follow.label (printf "%s / %s" (index $num "n_following") (index $num "n_follower")) $t.follow.sub)
+  (slice $t.grok.label (index $num "n_grok_chat")
+    ($t.grok.sub | strings.ReplacePairs "{block}" (index $num "n_block") "{mute}" (index $num "n_mute")))
+-}}
+{{- range $tiles -}}
+<div class="tile"><div class="v">{{ index . 1 }}</div><div class="l">{{ index . 0 | safeHTML }}</div>{{ with index . 2 }}<div class="s">{{ . | safeHTML }}</div>{{ end }}</div>
+{{- end -}}

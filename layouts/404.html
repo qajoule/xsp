@@ -1,0 +1,9 @@
+{{- /* baseof.html centers the 404 message in <main>. */}}
+{{ define "main" }}
+<div class="page-width max-w-[560px] py-16 text-center">
+  <p class="m-0 font-mono text-[clamp(64px,14vw,112px)] leading-none font-extrabold tracking-[-0.04em] text-accent" aria-hidden="true">404</p>
+  <h1 class="mt-4 mb-2.5 text-[clamp(24px,4vw,30px)] font-bold">ページが見つかりません</h1>
+  <p class="mt-0 mb-7 text-ink2">指定されたページは存在しないか、移動した可能性があります。</p>
+  <a class="btn" href="/">トップへ戻る</a>
+</div>
+{{ end }}

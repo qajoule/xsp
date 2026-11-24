@@ -1,0 +1,90 @@
+# The third-party files this site ships unchanged, and where they come from.
+#
+# Each package is the npm registry tarball at `tarball`, checked against
+# `integrity` (the registry's SHA-512, as npm records it). `files` maps a path
+# inside the tarball (below its top folder) to the file in this repository and its
+# SHA-256. `mise run vendor` fetches the tarballs and writes the files;
+# `mise run check` fails if a file here differs from its SHA-256.
+#
+# To update a package: change version, tarball, and integrity (from
+# https://registry.npmjs.org/<name>/<version>, field dist.integrity), run
+# `mise run vendor`, review the SHA-256 it reports for each changed file, and
+# write those values here before running it again.
+
+[[package]]
+name = "echarts"
+version = "6.1.0"
+tarball = "https://registry.npmjs.org/echarts/-/echarts-6.1.0.tgz"
+integrity = "sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA=="
+
+[package.files]
+"dist/echarts.min.js" = { to = "assets/vendor/echarts.min.js", sha256 = "b66b25aeb4df84e33199dc21694014d336d222cbd9deb0e5a7c14bd6aa0d0fd0" }
+"LICENSE" = { to = "static/legal/licenses/echarts-LICENSE.txt", sha256 = "634293835b43a6dd2094fa39182a3d9a6b9ca43b7fdb9ac354e8037af2a3093a" }
+"NOTICE" = { to = "static/legal/licenses/echarts-NOTICE.txt", sha256 = "d491d358344f842685c1b1585970999db65fe30ecf7ef3867af8814f4016c016" }
+"licenses/LICENSE-d3" = { to = "static/legal/licenses/LICENSE-d3", sha256 = "e1211892da0b0e0585b7aebe8f98c1274fba15bafe47fa1f4ee8a7a502c06304" }
+
+[[package]]
+name = "fflate"
+version = "0.8.3"
+tarball = "https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz"
+integrity = "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA=="
+
+[package.files]
+"umd/index.js" = { to = "assets/vendor/fflate.min.js", sha256 = "462ef8041fc970e3615a20a9dd2b2e3047a073b2da729ef4f02b634bba8b7b83" }
+# Types for the unit tests, which import the UMD build. Hugo never publishes it.
+"lib/index.d.ts" = { to = "assets/vendor/fflate.min.d.ts", sha256 = "985db2599e33d85a70a6da5f2b7b6f1b0bf9b9119781b684573a1a9b463e0cc4" }
+"LICENSE" = { to = "static/legal/licenses/fflate-LICENSE.txt", sha256 = "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551" }
+
+# kuromoji requests its dictionary by fixed names, so the dictionary stays in
+# static/ (see layouts/_partials/js.html).
+[[package]]
+name = "kuromoji"
+version = "0.1.2"
+tarball = "https://registry.npmjs.org/kuromoji/-/kuromoji-0.1.2.tgz"
+integrity = "sha512-V0dUf+C2LpcPEXhoHLMAop/bOht16Dyr+mDiIE39yX3vqau7p80De/koFqpiTcL1zzdZlc3xuHZ8u5gjYRfFaQ=="
+
+[package.files]
+"build/kuromoji.js" = { to = "assets/vendor/kuromoji.js", sha256 = "ab0ac10f1c4a9b5e246e63e57b04ba14d3a6148cd7e8d62cb97a960d4f85a3e6" }
+"NOTICE.md" = { to = "static/legal/licenses/kuromoji-NOTICE.md", sha256 = "fab84e2471dada5afa7ea4226b629f3fda414f9b50b62b4f832f8b57fe9addd7" }
+"dict/base.dat.gz" = { to = "static/vendor/dict/base.dat.gz", sha256 = "0803327762e1c93ca731e4319ab8343340f2806bb84941207782cde9d2d5a8eb" }
+"dict/cc.dat.gz" = { to = "static/vendor/dict/cc.dat.gz", sha256 = "02b7631be0d4de3a1a75cd9f9cc51536e4f94c9e6b389b813e06ba0f6e7de765" }
+"dict/check.dat.gz" = { to = "static/vendor/dict/check.dat.gz", sha256 = "193ae0035fff6fe812b58d9ee730e7a7d7ee601d918481ce51075c58114f6cc9" }
+"dict/tid.dat.gz" = { to = "static/vendor/dict/tid.dat.gz", sha256 = "d43d831cb6fb0f0a411739cd287a6d5e998e121a8daca614df14a81a0dcac586" }
+"dict/tid_map.dat.gz" = { to = "static/vendor/dict/tid_map.dat.gz", sha256 = "33efd5ffd87a70f669add093fa39dee44341d58f940844ef107c8fd98bb795b2" }
+"dict/tid_pos.dat.gz" = { to = "static/vendor/dict/tid_pos.dat.gz", sha256 = "60dbfc99a6ab993f30c5dab648bec6ad7f9aaefa5c14e1843837d95e509f8895" }
+"dict/unk.dat.gz" = { to = "static/vendor/dict/unk.dat.gz", sha256 = "f7f991cdeb9bfd3e9c0e4577cc50ee0815a11c508cccd444a9d3ab3c81521100" }
+"dict/unk_char.dat.gz" = { to = "static/vendor/dict/unk_char.dat.gz", sha256 = "9a8e86fd9aff32d323fbb59f5a7006f05927a11f8173c90712cc56293aeb3225" }
+"dict/unk_compat.dat.gz" = { to = "static/vendor/dict/unk_compat.dat.gz", sha256 = "50f60aa29bc2e86c2903ab8c825bb6fa604d2b294d96941c1d3924259791899d" }
+"dict/unk_invoke.dat.gz" = { to = "static/vendor/dict/unk_invoke.dat.gz", sha256 = "6b210889548457c3006913afd12c8b525562255f2709e404604be9614a25e94c" }
+"dict/unk_map.dat.gz" = { to = "static/vendor/dict/unk_map.dat.gz", sha256 = "6df12460e5477230bb6fd9641def918b699fc0a8868016b6c9f794488630509b" }
+"dict/unk_pos.dat.gz" = { to = "static/vendor/dict/unk_pos.dat.gz", sha256 = "5b183a29f281acc7e0542beca47b83f7985047c0a2d27e78a66f32276be5ad11" }
+
+# Type definitions for the code that runs on Bun (test/ and tools/), read by
+# tsconfig.bun.json. They are never published. `mise run vendor:types` unpacks
+# each whole tarball, except docs/, into .types/<into>/ (not committed), and
+# skips a package already unpacked at its version. The tarball integrity is the
+# only check, so files are not listed. bun-types needs @types/node and
+# undici-types; @types/node follows the Node version Bun reports
+# (`bun -e "console.log(process.version)"`, v26.3.0 for Bun 1.4.5), and
+# undici-types the range @types/node asks for.
+
+[[types]]
+name = "bun-types"
+version = "1.4.5"
+tarball = "https://registry.npmjs.org/bun-types/-/bun-types-1.4.5.tgz"
+integrity = "sha512-ECHn+9dhL3wv0G6u0+7dQvrnaimXiRDxxerYBmhTaLyJEEuvTPWk2Fye3XIf5Y++JIIiHKfQw4Z7V5D8KuiXbg=="
+into = "bun-types"
+
+[[types]]
+name = "@types/node"
+version = "26.3.0"
+tarball = "https://registry.npmjs.org/@types/node/-/node-26.3.0.tgz"
+integrity = "sha512-L3fgrnchriRC2ExBflb8j4uZZURHZfQsmQeyVzhjcHW4kkwVyo8/0h1B2MVzMTrYUJYu6G7EWs14hW/L9putqw=="
+into = "node"
+
+[[types]]
+name = "undici-types"
+version = "8.3.0"
+tarball = "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz"
+integrity = "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="
+into = "undici-types"

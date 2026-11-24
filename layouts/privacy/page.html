@@ -1,0 +1,22 @@
+{{- /* The privacy page (content/privacy.md). Its text lives here, not in the content file. */}}
+{{ define "main" }}
+<div class="prose page-width max-w-[760px] pt-12 pb-6 [&_dt]:text-[19px]">
+  <h1 class="mt-0 mb-8 text-[clamp(28px,4.4vw,40px)] leading-[1.25] font-bold tracking-[-0.01em]">データの扱い</h1>
+  <p class="-mt-2 mb-10 text-[17px] leading-[1.8] text-ink2">読み込んだアーカイブをサーバーへ送る処理は、このサイトに実装されていません。以下は、その内訳です。</p>
+  <dl>
+    <dt>どこで処理するか</dt>
+    <dd>ブラウザの中だけです。ファイルは File API で直接読み込み、画面の解析結果はメモリ上で扱い、タブを閉じると消えます。ご自身で保存したファイルやクリップボードの内容は残ります。</dd>
+    <dt>通信が起きる場面</dt>
+    <dd>グラフの描画ライブラリや日本語解析用の辞書などを、このサイトから読み込みます。投稿の内容が通信に乗ることはありません。CSP の <code>connect-src</code> を <code>'self'</code> に固定しているため、それ以外の接続先はブラウザが拒否します。</dd>
+    <dt>端末に保存するもの</dt>
+    <dd>表示テーマの選択（light / dark）だけを localStorage に保存します。投稿本文・ユーザー名・ファイル名は保存しません。</dd>
+    <dt>読まないファイル</dt>
+    <dd>DM・私信のファイルは開きません。画像・動画も読み込みません。いいね・フォロー・フォロワー・ブロック・ミュート・Grok の会話は、該当するファイルを端末内で読み取り、件数だけを集計します。</dd>
+    <dt>外部AIへ渡す場合</dt>
+    <dd>コーパスのダウンロード、コピー、Gemini Notebook などへのアップロードを選んだ場合、その時点からは利用先サービスのデータポリシーが適用されます。</dd>
+    <dt>アクセス解析</dt>
+    <dd>導入していません。Cookie も使いません。</dd>
+  </dl>
+  <a class="btn btn-link mt-14" href="/">トップへ戻る</a>
+</div>
+{{ end }}

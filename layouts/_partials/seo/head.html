@@ -1,0 +1,97 @@
+{{- /* GENERATED from seoworkspace/common/layouts/seo/head.html (sha256 58b218613d8c). Do not edit here: change the source and run tools/sync_common.py --write. */ -}}
+{{- /*
+  Shared SEO head. Source of truth: seoworkspace/common. Generated into each site
+  by tools/sync_common.py; do not edit the copy in a site repository.
+
+  Usage (from the site's own head template):
+    {{ partial "seo/head.html" (dict "page" . "title" $optionalPageTitle "ogTitle" $optionalSocialTitle) }}
+
+  Emits: robots, title, description, canonical, Open Graph, Twitter, JSON-LD.
+  Does not emit (site specific): charset, viewport, icons, PWA, fonts, theme-color.
+
+  Settings: [params.seo], [params.publisher], [params.author]. See common/README.md.
+  Behaviour:
+    - 404 pages: noindex, no canonical, no JSON-LD.
+    - Home title is seo.homeTitle if set, else the site title.
+    - og:image is seo.image (an assets/ path, a static path or an absolute URL),
+      overridable per page with the image front matter. Omitted when unset.
+*/ -}}
+{{- $page := .page -}}
+{{- $seo := or site.Params.seo (dict) -}}
+
+{{- /* Title and description */ -}}
+{{- $pageTitle := or .title $page.Title -}}
+{{- $title := cond $page.IsHome (or $seo.homeTitle site.Title) (printf "%s | %s" $pageTitle site.Title) -}}
+{{- $ogTitle := or .ogTitle (cond $page.IsHome site.Title $pageTitle) -}}
+{{- $desc := (or $page.Description $seo.description) | plainify | chomp -}}
+
+{{- /* Image: page front matter wins, then seo.image resolved from assets/, then a plain URL */ -}}
+{{- $imageURL := "" -}}
+{{- $imageW := 0 -}}
+{{- $imageH := 0 -}}
+{{- with $page.Params.image -}}
+  {{- $imageURL = . | absURL -}}
+{{- else with $seo.image -}}
+  {{- with resources.Get . -}}
+    {{- $imageURL = .Permalink -}}
+    {{- if in (slice "png" "jpeg" "webp" "gif") .MediaType.SubType -}}
+      {{- $imageW = .Width -}}
+      {{- $imageH = .Height -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $imageURL = . | absURL -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Robots: 404 and pages marked noindex; optionally every non-production build */ -}}
+{{- if or (eq $page.Kind "404") $page.Params.noindex }}
+<meta name="robots" content="noindex, follow">
+{{- else if and $seo.noindexNonProduction (not hugo.IsProduction) }}
+<meta name="robots" content="noindex, nofollow">
+{{- end }}
+<title>{{ $title }}</title>
+{{- if $desc }}
+<meta name="description" content="{{ $desc }}">
+{{- end }}
+{{- if ne $page.Kind "404" }}
+<link rel="canonical" href="{{ $page.Permalink }}">
+{{- end }}
+
+<meta property="og:site_name" content="{{ site.Title }}">
+{{- with $seo.locale }}
+<meta property="og:locale" content="{{ . }}">
+{{- end }}
+<meta property="og:type" content="{{ cond $page.IsPage "article" "website" }}">
+<meta property="og:title" content="{{ $ogTitle }}">
+{{- if $desc }}
+<meta property="og:description" content="{{ $desc }}">
+{{- end }}
+<meta property="og:url" content="{{ $page.Permalink }}">
+{{- if $imageURL }}
+<meta property="og:image" content="{{ $imageURL }}">
+  {{- with $seo.imageAlt }}
+<meta property="og:image:alt" content="{{ . }}">
+  {{- end }}
+  {{- if $imageW }}
+<meta property="og:image:width" content="{{ $imageW }}">
+<meta property="og:image:height" content="{{ $imageH }}">
+  {{- end }}
+{{- end }}
+
+<meta name="twitter:card" content="{{ or $seo.twitterCard (cond (ne $imageURL "") "summary_large_image" "summary") }}">
+<meta name="twitter:title" content="{{ $ogTitle }}">
+{{- if $desc }}
+<meta name="twitter:description" content="{{ $desc }}">
+{{- end }}
+{{- if $imageURL }}
+<meta name="twitter:image" content="{{ $imageURL }}">
+  {{- with $seo.imageAlt }}
+<meta name="twitter:image:alt" content="{{ . }}">
+  {{- end }}
+{{- end }}
+
+{{- if ne $page.Kind "404" }}
+<script type="application/ld+json"{{ with $seo.nonce }} nonce="{{ . }}"{{ end }}>
+  {{- partial "seo/json-ld.html" (dict "page" $page "title" $ogTitle "description" $desc "imageURL" $imageURL) | safeJS -}}
+</script>
+{{- end }}

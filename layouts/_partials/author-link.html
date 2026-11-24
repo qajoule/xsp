@@ -1,0 +1,12 @@
+{{- /*
+  Returns the first params.author.sameAs URL whose host matches the input,
+  for example "github.com". Returns "" when none matches.
+*/ -}}
+{{- $want := . -}}
+{{- $found := "" -}}
+{{- range site.Params.author.sameAs -}}
+  {{- if and (not $found) (eq (strings.TrimPrefix "www." (urls.Parse .).Host) $want) -}}
+    {{- $found = . -}}
+  {{- end -}}
+{{- end -}}
+{{- return $found -}}

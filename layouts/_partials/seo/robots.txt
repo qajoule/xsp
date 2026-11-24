@@ -1,0 +1,30 @@
+{{- /* GENERATED from seoworkspace/common/layouts/seo/robots.txt (sha256 00a373ecee9f). Do not edit here: change the source and run tools/sync_common.py --write. */ -}}
+{{- /*
+  Shared robots.txt. Source of truth: seoworkspace/common. Generated into each site
+  by tools/sync_common.py; do not edit the copy in a site repository.
+
+  Usage: the site's own layouts/robots.txt contains only
+    {{ partial "seo/robots.txt" . }}
+  and hugo.toml sets enableRobotsTXT = true. Do not keep static/robots.txt.
+
+  Setting: [params.seo] blockAiTraining = true refuses AI training crawlers.
+  Search engines, user-requested fetches and AI search crawlers stay allowed.
+
+  Cloudflare coexistence: with "Bot Preference Sync" on, Cloudflare prepends its own
+  managed block (User-Agent: * with Content-signal and Allow: /) to this file. So:
+    - this file is complete without it and never relies on it;
+    - it never writes "Disallow: /" under "User-agent: *" (the merged group would hold
+      Allow: / too, and a tie goes to Allow, so the block would silently fail). Keep
+      non-production pages out of the index with the robots meta tag instead;
+    - it writes no Content-signal line, so nothing is declared twice.
+*/ -}}
+{{- $seo := or site.Params.seo (dict) -}}
+{{- $aiTraining := slice "GPTBot" "ClaudeBot" "anthropic-ai" "CCBot" "Google-Extended" "Applebot-Extended" "Bytespider" "meta-externalagent" "FacebookBot" "Diffbot" "cohere-ai" "omgili" "omgilibot" -}}
+User-agent: *
+Disallow:
+{{ if $seo.blockAiTraining }}
+# AI training crawlers (search engines and user-requested fetches stay allowed)
+{{ range $aiTraining }}User-agent: {{ . }}
+{{ end }}Disallow: /
+{{ end }}
+Sitemap: {{ "sitemap.xml" | absURL }}

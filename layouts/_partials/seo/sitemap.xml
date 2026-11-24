@@ -1,0 +1,26 @@
+{{- /* GENERATED from seoworkspace/common/layouts/seo/sitemap.xml (sha256 1281e47c164e). Do not edit here: change the source and run tools/sync_common.py --write. */ -}}
+{{- /*
+  Shared sitemap. Source of truth: seoworkspace/common. Generated into each site
+  by tools/sync_common.py; do not edit the copy in a site repository.
+
+  Usage: the site's own layouts/sitemap.xml contains only
+    {{ partial "seo/sitemap.xml" . }}
+
+  Differences from Hugo's built-in template:
+    - pages marked noindex (front matter "noindex: true") and 404 are left out;
+    - priority and changefreq are never written (search engines ignore them);
+    - lastmod is written only when the page has one, as Hugo computes it.
+*/ -}}
+{{ printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {{- range site.Pages }}
+    {{- if and .Permalink (ne .Kind "404") (not .Params.noindex) (not .Sitemap.Disable) }}
+  <url>
+    <loc>{{ .Permalink }}</loc>
+      {{- if not .Lastmod.IsZero }}
+    <lastmod>{{ safeHTML (.Lastmod.Format "2006-01-02T15:04:05-07:00") }}</lastmod>
+      {{- end }}
+  </url>
+    {{- end }}
+  {{- end }}
+</urlset>

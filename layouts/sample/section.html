@@ -1,0 +1,12 @@
+{{- /*
+  The sample report (content/sample/_index.md). The report header and tiles
+  are drawn here from data/sample.json, so they show without JS; js.html passes
+  the same data to sample.ts, which draws the charts.
+*/}}
+{{ define "main" }}
+<div class="page-width mt-5 flex items-start gap-3.5 rounded-md border border-l-4 border-line border-l-accent bg-surface px-4.5 py-3.5 text-[14px] text-ink2">
+  <span class="flex-none rounded-full bg-accent px-2.5 py-px text-[12px] leading-[1.8] font-extrabold tracking-[0.08em] text-accent-ink">SAMPLE</span>
+  <p class="m-0">実在の人物のデータではありません。動作確認用に生成した匿名の合成アーカイブを、実際の解析処理へそのまま通した結果です。</p>
+</div>
+{{ partial "report.html" (dict "Params" (dict "noHandoff" true "overview" hugo.Data.sample.overview)) }}
+{{ end }}

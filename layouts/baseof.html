@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{{- /*
+  Skeleton shared by every page. In the template system introduced in Hugo
+  v0.146.0 it sits at the root of layouts/; layouts/_default/ is not used.
+
+  Every page loads the one stylesheet from css.html (Tailwind, see
+  assets/styles/main.css) and its scripts from js.html. Pages choose their
+  script with the front matter "script".
+
+  The html classes reserve the scrollbar's width on every page (without it, a
+  long page is a few pixels narrower than a short one, and the header jumps),
+  and keep in-page jumps clear of the sticky report nav (56px) plus 16px.
+*/}}
+<html lang="{{ site.Language.Locale }}" class="scroll-pt-18 [scrollbar-gutter:stable] motion-safe:scroll-smooth">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    {{ partial "seo/head.html" (dict "page" .) }}
+    {{ partial "css.html" . }}
+    {{ partial "js.html" . }}
+  </head>
+  <body class="flex min-h-svh flex-col bg-page font-sans text-[16px] leading-[1.7] text-ink antialiased">
+    <a class="absolute top-2 left-2 z-100 -translate-y-[200%] rounded-sm bg-accent px-3.5 py-2 font-bold text-accent-ink no-underline focus-visible:translate-none" href="#main">本文へ移動</a>
+    {{ partial "site-header.html" . }}
+    <main id="main" tabindex="-1" class="shrink-0 grow{{ if eq .Kind `404` }} grid place-items-center{{ end }}">
+      {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "site-footer.html" . }}
+  </body>
+</html>

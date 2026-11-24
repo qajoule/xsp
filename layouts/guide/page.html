@@ -1,0 +1,15 @@
+{{- /*
+  The guide (content/guide.md): table of contents beside the body. Below the
+  lg width the table of contents sits above the body, in a box.
+*/}}
+{{ define "main" }}
+<div class="page-width pt-7 pb-6 lg:grid lg:grid-cols-[minmax(180px,230px)_minmax(0,720px)] lg:justify-center lg:gap-[clamp(32px,6vw,72px)] lg:pt-12">
+  <aside class="toc text-[14px] leading-[1.6] max-lg:mb-8 max-lg:rounded-md max-lg:border max-lg:border-line max-lg:bg-surface max-lg:px-4 max-lg:py-3 lg:sticky lg:top-6 lg:self-start" aria-label="目次">
+    {{ .TableOfContents }}
+  </aside>
+  <article class="prose min-w-0 [&_h2]:scroll-mt-6">
+    <h1 class="mt-0 mb-8 text-[clamp(28px,4.4vw,40px)] leading-[1.25] font-bold tracking-[-0.01em]">{{ .Title }}</h1>
+    {{ .Content }}
+  </article>
+</div>
+{{ end }}

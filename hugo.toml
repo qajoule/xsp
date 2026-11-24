@@ -1,0 +1,32 @@
+baseURL = "https://xself.pages.dev/"
+locale = "ja"
+title = "X Self Profiler"
+enableRobotsTXT = true
+publishDir = "dist"
+disableKinds = ["RSS", "taxonomy", "term"]
+
+[params.seo]
+description = "X の公式アーカイブをブラウザ内だけで解析し、投稿の傾向を可視化するツール"
+locale = "ja_JP"
+# Resolved from assets/ by resources.Get, so og:image gets its width and height.
+# With an image set, twitter:card defaults to summary_large_image.
+image = "images/ogp.png"
+imageAlt = "X Self Profiler のイメージ画像"
+applicationCategory = "UtilitiesApplication"
+
+# 個人のツールなので publisher は置かず、author だけが JSON-LD の Person になる。
+# フッターのリンクと author-link.html も、この sameAs を使う。
+[params.author]
+name = "椎名一霤"
+alternateName = ["シイナカズル", "Qajoule"]
+jobTitle = "Engineer | Explorer | Illustrator | Guitarist"
+sameAs = [
+  "https://github.com/qajoule",
+  "https://x.com/qajoule",
+  "https://instagram.com/qajoule",
+  "https://twitcasting.tv/qajoule",
+  "https://jp-population-data.pages.dev/",
+]
+
+[build]
+noJSConfigInAssets = true

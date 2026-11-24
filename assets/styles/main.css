@@ -1,0 +1,223 @@
+/*
+ * main.css - the only Tailwind entry. `mise run css` compiles it with the
+ * Tailwind CLI into assets/styles/tailwind.css (git-ignored), and css.html
+ * publishes that one file on every page.
+ *
+ * Pages are styled with utilities in layouts/ and assets/app/. This file
+ * holds the design tokens and the element defaults; components.css holds the
+ * few class components (markup that TypeScript also writes, and HTML that
+ * Markdown renders).
+ *
+ * Concept: a night notebook. Warm paper and deep ink, with one indigo accent
+ * (distinct from X's own blue) and a persimmon secondary for emphasis in charts.
+ * Every text pair was measured at 4.5:1 or more, non-text parts at 3:1 or more.
+ * Never use pure white or pure black. Colors are defined only here.
+ */
+
+@import "tailwindcss" source(none);
+@import "./components.css";
+
+/* Scan only the files that write class names. */
+@source "../../layouts";
+@source "../../assets/app";
+
+/* theme-init.ts sets data-theme on <html> before the first paint. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* static: emit every token, because assets/app/charts.ts reads the colors
+   with getComputedStyle even where no utility uses them. */
+@theme static {
+  --color-*: initial;
+
+  /* surfaces */
+  --color-page: #f4f1ea;
+  --color-surface: #fcfaf6;
+  --color-chip: #e9e4d8;
+  --color-chip-ink: #1f2433;
+
+  /* text */
+  --color-ink: #1f2433;
+  --color-ink2: #3d4458;
+  --color-muted: #5b6277;
+
+  /* lines (grid and axis are also the chart grid and axis) */
+  --color-grid: #d9d3c4;
+  --color-axis: #8a8f9f;
+  --color-line: rgb(31 36 51 / 20%);
+  --color-line-strong: #7b8196;
+
+  /* accents */
+  --color-accent: #3b44b0;
+  --color-accent-ink: #fcfaf6;
+  --color-accent-hover: color-mix(
+    in srgb,
+    var(--color-accent) 86%,
+    var(--color-ink)
+  );
+  --color-link: #3b44b0;
+  --color-danger: #b42318;
+
+  /* shape */
+  --radius-*: initial;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* The widths where the layout changes, each named after what changes:
+     sm the header nav moves beside the brand, md the landing gets its upload
+     panel (the app needs a desktop browser), lg the guide gets its side
+     table of contents, xl the report grids get two or three columns. */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 681px;
+  --breakpoint-md: 721px;
+  --breakpoint-lg: 761px;
+  --breakpoint-xl: 821px;
+
+  /* motion */
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  --animate-loader: spin 0.85s linear infinite;
+
+  /* type */
+  --font-*: initial;
+  --font-sans:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic UI",
+    "Meiryo UI",
+    Meiryo,
+    sans-serif;
+  --font-mono:
+    ui-monospace,
+    "Cascadia Mono",
+    "SFMono-Regular",
+    Menlo,
+    Consolas,
+    monospace;
+}
+
+/* The page body: centered, at most 1180px wide, with a gutter on each side. */
+@utility page-width {
+  width: min(100% - 2 * clamp(16px, 4vw, 32px), 1180px);
+  margin-inline: auto;
+}
+
+/* Cross-document view transition: the whole page (the root snapshot) cross-fades
+   on every navigation. Do not add view-transition-name to header or footer,
+   or they would be split out of the page-wide transition. */
+@view-transition {
+  navigation: auto;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /* The dark tokens. The media query is the fallback for the moment before
+     theme-init.ts sets data-theme, and for no-JS. Keep both lists equal. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-page: #131622;
+      --color-surface: #1c2030;
+      --color-chip: #2a2f45;
+      --color-chip-ink: #ebe9f2;
+      --color-ink: #ebe9f2;
+      --color-ink2: #c9c9d9;
+      --color-muted: #a3a7bd;
+      --color-grid: #2a2f45;
+      --color-axis: #5a6080;
+      --color-line: rgb(235 233 242 / 20%);
+      --color-line-strong: #7e84a3;
+      --color-accent: #aab4ff;
+      --color-accent-ink: #131622;
+      --color-link: #aab4ff;
+      --color-danger: #ff8a80;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-page: #131622;
+    --color-surface: #1c2030;
+    --color-chip: #2a2f45;
+    --color-chip-ink: #ebe9f2;
+    --color-ink: #ebe9f2;
+    --color-ink2: #c9c9d9;
+    --color-muted: #a3a7bd;
+    --color-grid: #2a2f45;
+    --color-axis: #5a6080;
+    --color-line: rgb(235 233 242 / 20%);
+    --color-line-strong: #7e84a3;
+    --color-accent: #aab4ff;
+    --color-accent-ink: #131622;
+    --color-link: #aab4ff;
+    --color-danger: #ff8a80;
+  }
+
+  h1,
+  h2,
+  h3 {
+    /* Chrome 119+ breaks Japanese at phrase boundaries instead of mid-word. */
+    word-break: auto-phrase;
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  svg,
+  canvas {
+    max-width: 100%;
+  }
+
+  /* Preflight makes links inherit color and decoration; links here are
+     underlined in the link color unless a utility says otherwise. */
+  a {
+    color: var(--color-link);
+    text-decoration-line: underline;
+    text-underline-offset: 3px;
+  }
+
+  code {
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--color-chip);
+    color: var(--color-chip-ink);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

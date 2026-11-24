@@ -1,0 +1,168 @@
+/*
+ * components.css - the class components, imported by main.css.
+ * Everything else is styled with utilities where the markup is written.
+ * A class lives here only when utilities cannot reach the markup or would
+ * repeat it:
+ *   - btn: about ten buttons in four templates.
+ *   - tile, kv, chip, report-table: markup that assets/app/charts.ts writes
+ *     at run time (tile also comes from layouts/_partials/report-tiles.html).
+ *   - prose, toc, landing-instructions: HTML that Hugo renders from Markdown
+ *     or from .TableOfContents, which carries no classes.
+ */
+
+@layer components {
+  /* ===== buttons ===== */
+  .btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border
+      border-accent bg-accent px-5 py-2.5 text-[15px] leading-[1.3] font-bold text-accent-ink
+      no-underline transition-[background-color,border-color,color,translate] active:translate-y-px;
+  }
+
+  .btn:hover {
+    @apply border-accent-hover bg-accent-hover;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-accent;
+  }
+
+  .btn-ghost:hover {
+    @apply border-accent bg-accent/12;
+  }
+
+  .btn-link {
+    @apply border-line-strong bg-transparent text-ink;
+  }
+
+  .btn-link:hover {
+    @apply border-ink bg-ink/8;
+  }
+
+  /* ===== report tiles (report-tiles.html and charts.ts renderOverview) ===== */
+  .tile {
+    @apply rounded-lg border border-line bg-surface px-4.5 py-4;
+  }
+
+  .tile > .v {
+    @apply text-[28px] leading-[1.25] font-bold tabular-nums;
+  }
+
+  .tile > .l {
+    @apply mt-1 text-[13px] font-semibold text-ink2;
+  }
+
+  .tile > .s {
+    @apply mt-0.5 text-[12.5px] text-muted;
+  }
+
+  /* ===== key-value tiles (charts.ts, psyche and persona) ===== */
+  .kv {
+    @apply rounded-md border border-line bg-surface px-4 py-3.5;
+  }
+
+  .kv > .l {
+    @apply text-[13px] font-semibold text-muted;
+  }
+
+  .kv > .v {
+    @apply mt-1 text-[18px] font-bold tabular-nums;
+  }
+
+  .kv > .detail {
+    @apply mt-1.5 text-[12.5px] leading-[1.6] text-muted;
+  }
+
+  /* ===== chips (charts.ts) ===== */
+  .chip {
+    @apply rounded-full bg-chip px-3 py-0.75 text-[13.5px] whitespace-nowrap text-chip-ink;
+  }
+
+  .chip > b {
+    @apply ml-1.5 font-bold text-accent tabular-nums;
+  }
+
+  .chip-off {
+    @apply bg-transparent text-ink2 inset-ring inset-ring-line-strong;
+  }
+
+  /* ===== top-posts table (rows from charts.ts) ===== */
+  .report-table {
+    @apply w-full border-collapse text-[14px];
+  }
+
+  .report-table :is(th, td) {
+    @apply border-b border-line px-2.5 py-2.25 text-left align-top;
+  }
+
+  .report-table th {
+    @apply text-[13px] font-bold text-muted;
+  }
+
+  .report-table tbody tr:hover {
+    @apply bg-ink/5;
+  }
+
+  .report-table td.num {
+    @apply text-right whitespace-nowrap text-ink2 tabular-nums;
+  }
+
+  .report-table td.txt {
+    @apply max-w-[560px] wrap-anywhere;
+  }
+
+  /* ===== prose: the guide body (Markdown) and the privacy list ===== */
+  .prose :is(h2, dt) {
+    @apply relative mt-14 mb-3.5 pl-4 text-[21px] leading-[1.4] font-bold;
+  }
+
+  .prose :is(h2, dt)::before {
+    @apply absolute inset-y-[0.3em] left-0 w-1 rounded-[2px] bg-accent content-[""];
+  }
+
+  .prose dt:first-child {
+    @apply mt-0;
+  }
+
+  .prose :is(p, li, dd) {
+    @apply leading-[1.9] text-ink2;
+  }
+
+  .prose p + p {
+    @apply mt-4.5;
+  }
+
+  /* ===== toc: the guide's .TableOfContents ===== */
+  .toc a {
+    @apply -ml-0.5 block border-l-2 border-line px-3.5 py-1.75 text-ink2 no-underline transition-colors;
+  }
+
+  .toc a:hover {
+    @apply border-l-ink2 text-ink;
+  }
+
+  /* set by static-page.ts while the matching section is on screen */
+  .toc a[aria-current="true"] {
+    @apply border-l-accent font-bold text-ink;
+  }
+
+  /* ===== landing-instructions: the home page's Markdown ===== */
+  .landing-instructions h3 {
+    @apply m-0 text-[clamp(18px,2vw,22px)] leading-[1.45] font-bold text-ink;
+  }
+
+  .landing-instructions h3:not(:first-child) {
+    @apply mt-8 border-t border-line pt-6;
+  }
+
+  .landing-instructions p {
+    @apply my-3;
+  }
+
+  .landing-instructions ul {
+    @apply my-4 list-disc border-l-3 border-accent bg-surface py-4 pr-5 pl-10;
+  }
+
+  .landing-instructions li + li {
+    @apply mt-2;
+  }
+}

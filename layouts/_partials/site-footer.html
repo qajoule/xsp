@@ -1,0 +1,26 @@
+{{- /* Profile links come from params.author.sameAs; only the hosts in $sites get an icon. */}}
+{{ $sites := dict
+  "x.com" (dict "icon" "x" "label" "X")
+  "github.com" (dict "icon" "github" "label" "GitHub")
+}}
+{{- $link := "text-ink2 no-underline hover:text-accent hover:underline" -}}
+<footer class="mt-18 border-t border-line text-[13px] text-muted">
+  <div class="page-width flex flex-col items-center gap-2 pt-6 pb-8 text-center">
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+      <span>© {{ site.Params.author.name }}</span>
+      {{ range site.Params.author.sameAs }}
+        {{ $url := . }}
+        {{ $host := strings.TrimPrefix "www." (urls.Parse $url).Host }}
+        {{ with index $sites $host }}
+          <a class="{{ $link }} -m-1.5 inline-grid size-9 place-items-center rounded-full" href="{{ $url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ .label }} @{{ path.Base (urls.Parse $url).Path }}">
+            {{ partial "social-icon.html" .icon }}
+          </a>
+        {{ end }}
+      {{ end }}
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+      <a class="{{ $link }}" href="/legal/LICENSE">License</a>
+      <a class="{{ $link }}" href="/legal/THIRD_PARTY_NOTICES.md">Third-Party Licenses</a>
+    </div>
+  </div>
+</footer>

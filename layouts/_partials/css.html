@@ -1,0 +1,22 @@
+{{- /*
+  The one stylesheet, the same on every page.
+
+  assets/styles/tailwind.css is made outside Hugo by the Tailwind CLI
+  (`mise run css`, from assets/styles/main.css) and is git-ignored. Since
+  v0.161.0, Hugo's css.TailwindCSS only runs Tailwind from npm, and this site
+  keeps Node out, so Hugo only picks up the result here.
+
+  resources.Copy moves it under /assets/, where static/_headers marks files
+  immutable. Production builds are minified. fingerprint gives both the
+  cache-busting name and the integrity attribute.
+*/ -}}
+{{- with resources.Get "styles/tailwind.css" }}
+  {{- $css := . | resources.Copy "assets/site.css" -}}
+  {{- if hugo.IsProduction }}
+    {{- $css = $css | minify -}}
+  {{- end }}
+  {{- $css = $css | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- else }}
+  {{- errorf "css.html: assets/styles/tailwind.css is missing; run `mise run css` first" -}}
+{{- end }}

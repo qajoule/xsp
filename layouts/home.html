@@ -1,0 +1,71 @@
+{{- /*
+  The landing page, the report the app fills in, the analysis loader, and the
+  whole-screen drop target. The upload panel needs a desktop browser (ZIP
+  handling, large archives), so below the md width it gives way to a note,
+  and the explanation and the sample stay.
+*/}}
+{{ define "main" }}
+{{- $step := "flex flex-col gap-3 rounded-lg bg-surface" -}}
+{{- $stepLabel := "self-start rounded-full bg-accent px-2.5 py-0.5 text-[12px] leading-[1.6] font-extrabold tracking-[0.08em] text-accent-ink" -}}
+<div class="page-width pt-[clamp(32px,6vw,72px)] pb-6" id="landing">
+  <div class="grid grid-cols-1 items-center gap-[clamp(32px,6vw,80px)] md:grid-cols-[minmax(0,1fr)_minmax(320px,440px)]">
+    <div>
+      <h1 class="m-0 text-[clamp(36px,5.4vw,60px)] leading-[1.18] font-extrabold tracking-[-0.02em]">X のアーカイブから<br>自己分析。</h1>
+      <p class="mt-7 text-[clamp(18px,2vw,23px)] leading-[1.6] font-bold text-ink">去年の自分は、何に夢中だったでしょうか。</p>
+      <p class="mt-6 max-w-[560px] border-l-3 border-grid pl-4 text-[14px] leading-[1.85] text-ink2">X のアーカイブを読み込むと、よく使う言葉や投稿する時間帯、反応が多かった投稿を振り返れます。さらに、年ごとの投稿を AI に読み込ませて、関心や言葉遣いがどう変わったかを、当時の自分の言葉からたどれます。</p>
+      <div class="mt-7">
+        <a class="btn btn-link" href="/sample/">サンプルを見る</a>
+      </div>
+      <p class="mt-6 flex max-w-[560px] items-start gap-2.5 text-[14px] text-ink2">
+        <svg class="mt-0.5 size-5 flex-none stroke-accent" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3 5 6v5c0 4.4 2.9 8.2 7 10 4.1-1.8 7-5.6 7-10V6l-7-3Z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+        <span>
+          <span>読み込んだデータが外部に保存されることはありません。</span>
+          <a class="font-semibold" href="/privacy">詳しく見る</a>
+        </span>
+      </p>
+    </div>
+    <div class="hidden gap-4 md:grid">
+      <div class="{{ $step }} border border-line p-5">
+        <span class="{{ $stepLabel }}">STEP 1</span>
+        <a class="btn btn-ghost flex w-full" href="https://x.com/settings/download_your_data" target="_blank" rel="noopener">
+          <span>Xの設定を開く</span>
+          <svg class="size-4.5 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+          </svg>
+        </a>
+      </div>
+      <div class="{{ $step }} items-center border-2 border-dashed border-line-strong px-6 pt-6 pb-7 text-center" id="drop">
+        <span class="{{ $stepLabel }}">STEP 2</span>
+        <svg class="mt-1 size-10 stroke-accent" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+        </svg>
+        <div class="text-[19px] leading-[1.4] font-extrabold">データを読み込む</div>
+        <div class="text-[14px] text-ink2">ドラッグ＆ドロップ</div>
+        <div class="text-[13px] text-muted">またはファイルを選択</div>
+        <button class="btn mt-0.5 flex w-full" id="pick" type="button">ファイルを見る</button>
+        <input id="file" type="file" multiple accept=".zip,.js,application/zip,application/x-zip-compressed" class="hidden">
+      </div>
+    </div>
+    <p class="m-0 rounded-md border border-l-4 border-line border-l-accent bg-surface px-4 py-3.5 font-bold text-ink md:hidden">本サイトはPC専用です</p>
+  </div>
+  <section class="mx-auto mt-[clamp(40px,7vw,88px)] max-w-[740px] border-t border-line py-[clamp(24px,4vw,48px)]" aria-labelledby="using-the-site">
+    <h2 class="m-0 text-[24px] leading-[1.45] font-bold" id="using-the-site">使い方</h2>
+    <div class="landing-instructions mt-5 leading-[1.85] text-ink2">{{ .Content }}</div>
+  </section>
+</div>
+{{ partial "report.html" (dict "Params" (dict "hidden" true)) }}
+<div class="fixed inset-0 z-60 grid place-items-center bg-page/90" id="analysis-loader" hidden aria-live="polite" aria-busy="true">
+  {{- /* The close button and the error look exist only in the error state. */}}
+  <div class="group flex w-[min(420px,calc(100vw-48px))] flex-col items-center gap-4 rounded-lg border border-line bg-surface px-7 py-8 text-center">
+    <span class="size-8 animate-loader rounded-full border-4 border-grid border-t-accent group-has-[[data-state=error]]:hidden" aria-hidden="true"></span>
+    <p class="m-0 whitespace-pre-wrap text-ink2 group-has-[[data-state=error]]:font-bold group-has-[[data-state=error]]:text-danger" id="status"></p>
+    <pre id="app-status" class="sr-only" data-state="idle"></pre>
+    <button class="btn btn-link hidden group-has-[[data-state=error]]:inline-flex" id="loader-close" type="button">閉じる</button>
+  </div>
+</div>
+{{- /* Shown by ui.ts, which sets is-dragging-files on <html> while files are dragged over the page. */}}
+<div class="pointer-events-none fixed inset-4 z-50 hidden place-items-center rounded-[20px] border-3 border-dashed border-accent bg-page/90 text-[22px] font-extrabold text-ink in-[.is-dragging-files]:grid" aria-hidden="true">ZIP をここにドロップ</div>
+{{ end }}

@@ -1,0 +1,78 @@
+{{- /*
+  The page's scripts. The page code is built from assets/app/ by js.Build.
+  The libraries in assets/vendor/ are published as they are, only renamed by
+  fingerprint.
+
+  theme-init.ts is a classic script without defer, so it sets data-theme
+  before the first paint. The page's module comes from its front matter
+  "script" (static-page.ts when unset). Classic defer scripts and module
+  scripts run in document order, so a library loaded with defer exists
+  before the module runs.
+
+  - The analyzer (main.ts) reads fflate as a global, and finds the NLP worker
+    and ECharts through meta elements. The worker is a separate bundle
+    because the browser loads it with new Worker(). It gets the URLs of
+    kuromoji and the emotion dictionary through js.Build params, because it
+    has no document to read meta elements from.
+  - The sample (sample.ts) gets its data, data/sample.json, through js.Build
+    params, and finds ECharts through a meta element.
+  - Both get the page copy, data/content.toml, through js.Build params, for
+    the copy they render at run time (assets/app/content.ts).
+
+  Production builds are minified; development builds get inline source maps.
+  fingerprint gives both the cache-busting name under /assets/ (immutable in
+  static/_headers) and the integrity attribute. The kuromoji dictionary stays
+  in static/vendor/dict/, because kuromoji requests its files by fixed names.
+*/ -}}
+{{- $options := dict
+  "minify" hugo.IsProduction
+  "sourceMap" (cond hugo.IsProduction "" "inline")
+  "format" "esm"
+-}}
+{{- $entry := .Params.script | default "app/static-page.ts" -}}
+{{- $params := dict -}}
+{{- $charts := false -}}
+
+{{- $theme := resources.Get "app/theme-init.ts"
+  | js.Build (merge $options (dict "format" "iife" "targetPath" "assets/theme-init.js"))
+  | fingerprint
+}}
+<script src="{{ $theme.RelPermalink }}" integrity="{{ $theme.Data.Integrity }}"></script>
+
+{{- if eq $entry "app/main.ts" }}
+  {{- $charts = true -}}
+  {{- $params = dict "content" hugo.Data.content -}}
+  {{- $fflate := resources.Get "vendor/fflate.min.js" | resources.Copy "assets/fflate.min.js" | fingerprint }}
+<script defer src="{{ $fflate.RelPermalink }}" integrity="{{ $fflate.Data.Integrity }}"></script>
+{{- else if eq $entry "app/sample.ts" }}
+  {{- $charts = true -}}
+  {{- $params = dict "content" hugo.Data.content "data" hugo.Data.sample -}}
+{{- end }}
+
+{{- if $charts }}
+  {{- $echarts := resources.Get "vendor/echarts.min.js" | resources.Copy "assets/echarts.min.js" | fingerprint }}
+<meta name="xsp-echarts" content="{{ $echarts.RelPermalink }}" data-integrity="{{ $echarts.Data.Integrity }}">
+{{- end }}
+
+{{- with resources.Get $entry }}
+  {{- $page := . | js.Build (merge $options (dict
+    "targetPath" (printf "assets/%s.js" (path.BaseName $entry))
+    "params" $params
+  )) | fingerprint }}
+<script type="module" src="{{ $page.RelPermalink }}" integrity="{{ $page.Data.Integrity }}"></script>
+{{- else }}
+  {{- errorf "js.html: %q is not in assets/" $entry -}}
+{{- end }}
+
+{{- if eq $entry "app/main.ts" }}
+  {{- $kuromoji := resources.Get "vendor/kuromoji.js" | resources.Copy "assets/kuromoji.js" | fingerprint -}}
+  {{- $emotion := resources.Get "vendor/emotion_dict.json" | resources.Copy "assets/emotion_dict.json" | fingerprint -}}
+  {{- $worker := resources.Get "app/nlp-worker.ts"
+    | js.Build (merge $options (dict
+      "targetPath" "assets/nlp-worker.js"
+      "params" (dict "kuromoji" $kuromoji.RelPermalink "emotion" $emotion.RelPermalink "dictionary" "/vendor/dict")
+    ))
+    | fingerprint
+  }}
+<meta name="xsp-nlp-worker" content="{{ $worker.RelPermalink }}">
+{{- end }}

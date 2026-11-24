@@ -1,0 +1,29 @@
+{
+  "typescript": {
+  },
+  "markdown": {
+  },
+  "toml": {
+  },
+  "malva": {
+  },
+  "markup": {
+  },
+  "excludes": [
+    ".types/**",
+    "bin/**",
+    "dist/**",
+    "assets/vendor/**",
+    "static/vendor/**",
+    "static/legal/licenses/**",
+    "static/google*.html",
+    "layouts/**"
+  ],
+  "plugins": [
+    "npm:@dprint/typescript@0.96.1",
+    "npm:@dprint/markdown@0.23.3",
+    "npm:@dprint/toml@0.8.0",
+    "npm:dprint-plugin-malva@0.16.0",
+    "npm:dprint-plugin-markup@0.27.3"
+  ]
+}

@@ -1,0 +1,31 @@
+# Personal X archive data must never be committed. An extracted archive keeps
+# its files in data/. Hugo's data/ holds only the page copy and the synthetic
+# sample report.
+/data/*
+!/data/sample.json
+!/data/content.toml
+/*/**/data/
+*archive*/
+tweets.js
+personalization.js
+account.js
+direct-message*.js
+like.js
+following.js
+follower.js
+block.js
+mute.js
+grok-chat-item.js
+*_media/
+twitter-*.zip
+*.zip
+
+# Generated files and local tooling state.
+dist/
+.types/
+# Tailwind CLI output (mise run css), from assets/styles/main.css.
+/assets/styles/tailwind.css
+.wrangler/
+.hugo_build.lock
+.DS_Store
+Thumbs.db

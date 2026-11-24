@@ -1,0 +1,262 @@
+{{- /*
+  Report skeleton shared by the home page and the sample page. The static copy
+  comes from data/content.toml; the app fills in the rest. The copy may hold
+  simple markup, so it is trusted as HTML.
+  Params: hidden (start hidden), noHandoff (leave out the "AI handoff" section),
+  overview (render the name, period, and tiles of this overview, so they show
+  without JS; charts.ts renderOverview draws the same markup in the browser).
+
+  The class strings that repeat are set once below. Below the xl width every
+  grid is one column.
+*/}}
+{{- $c := hugo.Data.content -}}
+{{- $section := "mt-14" -}}
+{{- $h2 := "mt-0 mb-1 flex items-center gap-2.5 text-[22px] leading-[1.4] font-bold" -}}
+{{- $bar := "h-5 w-1 flex-none rounded-[2px] bg-accent" -}}
+{{- $note := "mt-0 mb-5 text-[14px] text-ink2" -}}
+{{- $g2 := "grid grid-cols-1 gap-4 xl:grid-cols-2" -}}
+{{- $card := "min-w-0 rounded-lg border border-line bg-surface p-4.5" -}}
+{{- $h3 := "mt-0 mb-3 text-[15px] leading-[1.5] font-bold text-ink2" -}}
+{{- $chart := "h-[300px] w-full" -}}
+{{- $tall := "h-[360px] w-full" -}}
+{{- $chips := "flex flex-wrap gap-2" -}}
+{{- $navLink := "flex-none rounded-full px-3.5 py-1.75 text-[14px] font-semibold whitespace-nowrap text-ink2 no-underline transition-colors hover:bg-ink/9 hover:text-ink" -}}
+{{- $navCta := "ml-auto flex-none rounded-full bg-accent px-3.5 py-1.75 text-[14px] font-bold whitespace-nowrap text-accent-ink no-underline transition-colors hover:bg-accent-hover hover:text-accent-ink" -}}
+<div class="page-width pt-7 pb-6{{ if .Params.hidden }} hidden{{ end }}" id="report">
+  <header class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+    {{- $h1 := "m-0 text-[clamp(24px,3vw,32px)] leading-[1.3] font-bold" -}}
+    {{- $handle := "text-[16px] text-muted" -}}
+    {{- $period := "w-full text-[14px] text-ink2 tabular-nums xl:ml-auto xl:w-auto" -}}
+    {{- with .Params.overview }}
+    <h1 class="{{ $h1 }}" id="dname">{{ or .display_name .username }}</h1><span class="{{ $handle }}" id="handle">@{{ .username }}</span><span class="{{ $period }}" id="period">{{ .first_post }} - {{ .last_post }}</span>
+    {{- else }}
+    <h1 class="{{ $h1 }}" id="dname"></h1><span class="{{ $handle }}" id="handle"></span><span class="{{ $period }}" id="period"></span>
+    {{- end }}
+  </header>
+  <p class="mt-1 mb-6 text-[14px] text-ink2">{{ $c.header.subNote | safeHTML }}</p>
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3" id="tiles">{{ with .Params.overview }}{{ partial "report-tiles.html" (dict "overview" . "copy" $c.tiles) }}{{ end }}</div>
+  <section id="app-report" class="sr-only" hidden>
+    <span id="report-name"></span><span id="report-total"></span>
+  </section>
+  <nav class="sticky top-0 z-20 mt-7 flex min-h-14 items-center gap-1.5 overflow-x-auto border-b border-line bg-page/92 py-2 backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" id="report-nav" aria-label="レポートの目次">
+    {{- range slice "postShape:sec_shape" "rhythm:sec_rhythm" "usage:sec_usage" "consume:sec_consume" "text:sec_text" "psyche:sec_psyche" "persona:sec_persona" }}
+    {{- $pair := split . ":" }}
+    <a class="{{ $navLink }}" href="#{{ index $pair 1 }}">{{ (index $c.sections (index $pair 0)).heading | safeHTML }}</a>
+    {{- end }}
+    {{ if not .Params.noHandoff }}<a class="{{ $navCta }}" href="#sec_handoff">AIに読ませる</a>{{ end }}
+  </nav>
+  <section class="{{ $section }}" id="sec_shape">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.postShape.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.postShape.note | safeHTML }}</p>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.postShape.cards.breakdown | safeHTML }}</h3>
+        <div id="c_breakdown" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.postShape.cards.year | safeHTML }}</h3>
+        <div id="c_year" class="{{ $chart }}"></div>
+      </div>
+    </div>
+    <div class="{{ $card }} mt-4">
+      <h3 class="{{ $h3 }}">{{ $c.sections.postShape.cards.month | safeHTML }}</h3>
+      {{- /* Taller than other charts: the zoom slider needs its own band under the axis labels. */}}
+      <div id="c_month" class="h-[400px] w-full"></div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_rhythm">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.rhythm.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}" id="rhythm_note"></p>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.rhythm.cards.hour | safeHTML }}</h3>
+        <div id="c_hour" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.rhythm.cards.wday | safeHTML }}</h3>
+        <div id="c_wday" class="{{ $chart }}"></div>
+      </div>
+    </div>
+    <div class="{{ $card }} mt-4">
+      <h3 class="{{ $h3 }}">{{ $c.sections.rhythm.cards.heat | safeHTML }}</h3>
+      <div id="c_heat" class="h-[320px] w-full"></div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_usage">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.usage.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.usage.note | safeHTML }}</p>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.usage.cards.source | safeHTML }}</h3>
+        <div id="c_source" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.usage.cards.fav | safeHTML }}</h3>
+        <div id="c_fav" class="{{ $chart }}"></div>
+      </div>
+    </div>
+    <div class="{{ $card }} mt-4">
+      <h3 class="{{ $h3 }}">{{ $c.sections.usage.cards.top | safeHTML }}</h3>
+      <div class="overflow-x-auto">
+        <table class="report-table" id="t_top">
+          <thead>
+            <tr>
+              <th>投稿</th>
+              <th>日付</th>
+              <th>&#9829;</th>
+              <th>RT</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_consume">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.consume.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.consume.note | safeHTML }}</p>
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.consume.cards.domain | safeHTML }}</h3>
+        <div id="c_domain" class="{{ $tall }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.consume.cards.tag | safeHTML }}</h3>
+        <div id="c_tag" class="{{ $tall }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.consume.cards.mention | safeHTML }}</h3>
+        <div id="c_mention" class="{{ $tall }}"></div>
+      </div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_text">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.text.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}" id="text_note"></p>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.proper | safeHTML }}</h3>
+        <div id="c_proper" class="{{ $tall }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.noun | safeHTML }}</h3>
+        <div id="c_noun" class="{{ $tall }}"></div>
+      </div>
+    </div>
+    <div class="{{ $g2 }} mt-4">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.verb | safeHTML }}</h3>
+        <div id="c_verb" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.adj | safeHTML }}</h3>
+        <div id="c_adj" class="{{ $chart }}"></div>
+      </div>
+    </div>
+    <div class="{{ $g2 }} mt-4">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.inter | safeHTML }}</h3>
+        <div class="{{ $chips }}" id="chips_inter"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.text.cards.emoji | safeHTML }}</h3>
+        <div class="{{ $chips }}" id="chips_emoji"></div>
+      </div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_psyche">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.psyche.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.psyche.note | safeHTML }}</p>
+    <div class="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3" id="psyche_tiles"></div>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.psyche.cards.fp | safeHTML }}</h3>
+        <div id="c_fp" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.psyche.cards.emo | safeHTML }}</h3>
+        <div id="c_emo" class="{{ $chart }}"></div>
+      </div>
+    </div>
+    <div class="{{ $card }} mt-4">
+      <h3 class="{{ $h3 }}">{{ $c.sections.psyche.cards.orient | safeHTML }}</h3>
+      <div id="c_orient" class="{{ $chart }}"></div>
+    </div>
+    <div class="{{ $g2 }} mt-4">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.psyche.cards.assert | safeHTML }}</h3>
+        <div id="c_assert" class="{{ $chart }}"></div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.psyche.cards.negrate | safeHTML }}</h3>
+        <div id="c_negrate" class="{{ $chart }}"></div>
+      </div>
+    </div>
+  </section>
+  <section class="{{ $section }}" id="sec_persona">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.persona.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.persona.note | safeHTML }}</p>
+    <div class="mb-4 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3" id="demo"></div>
+    <p class="mt-0 mb-3 text-[14px] text-ink2 [&_b]:text-accent" id="cross_note"></p>
+    <div class="{{ $card }}">
+      <h3 class="{{ $h3 }}">{{ $c.sections.persona.cards.verint | safeHTML }}</h3>
+      <div id="c_verint" class="{{ $tall }}"></div>
+    </div>
+    <div class="{{ $g2 }} mt-4">
+      <details class="{{ $card }} group">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 after:mr-1 after:size-2.5 after:flex-none after:-translate-y-0.5 after:rotate-45 after:border-r-[2.5px] after:border-b-[2.5px] after:border-muted after:transition-[translate,rotate] group-open:after:translate-y-0.5 group-open:after:-rotate-135 [&::-webkit-details-marker]:hidden"><h3 class="m-0 text-[15px] leading-[1.5] font-bold text-ink2" id="ttl_int"></h3></summary>
+        <div class="{{ $chips }} mt-3.5" id="chips_int"></div>
+      </details>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.persona.cards.unment | safeHTML }}</h3>
+        <div class="{{ $chips }}" id="chips_unment"></div>
+      </div>
+    </div>
+    <div class="{{ $card }} mt-4">
+      <h3 class="{{ $h3 }}" id="ttl_shows"></h3>
+      <div class="{{ $chips }}" id="chips_shows"></div>
+    </div>
+  </section>
+  {{ if not .Params.noHandoff }}
+  <section class="{{ $section }}" id="sec_handoff">
+    <h2 class="{{ $h2 }}">
+      <span class="{{ $bar }}"></span><span>{{ $c.sections.handoff.heading | safeHTML }}</span>
+    </h2>
+    <p class="{{ $note }}">{{ $c.sections.handoff.note | safeHTML }}</p>
+    <p class="mt-0 mb-4 rounded-md border border-l-4 border-line border-l-accent bg-surface px-4 py-3 text-[14px] leading-[1.7] text-ink2">{{ $c.sections.handoff.externalNotice | safeHTML }}</p>
+    <div class="{{ $g2 }}">
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}" id="ttl_hf1"></h3>
+        <ol class="mt-0 mb-4 list-decimal pl-5.5 text-[14.5px] text-ink2 [&_li]:my-1.5">{{ $c.sections.handoff.card1.steps | safeHTML }}</ol>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button class="btn" id="dl_zip">{{ $c.sections.handoff.card1.btnZip | safeHTML }}</button>
+          <button class="btn btn-ghost" id="cp_prompt">{{ $c.sections.handoff.card1.btnPrompt | safeHTML }}</button><a class="btn btn-link" href="https://notebook.google.com/" target="_blank" rel="noopener">{{ $c.sections.handoff.card1.btnOpen | safeHTML }}</a>
+        </div>
+      </div>
+      <div class="{{ $card }}">
+        <h3 class="{{ $h3 }}">{{ $c.sections.handoff.card2.title | safeHTML }}</h3>
+        <p class="mt-0 mb-4 text-[14.5px] text-ink2">{{ $c.sections.handoff.card2.lead | safeHTML }}</p>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button class="btn" id="cp_all">{{ $c.sections.handoff.card2.btnCopy | safeHTML }}</button>
+        </div>
+        <div class="mt-3 text-[13px] text-muted">{{ $c.sections.handoff.card2.hint | safeHTML }}</div>
+      </div>
+    </div>
+  </section>
+  {{ end }}
+  <div class="mt-14 border-t border-line pt-4 text-[13px] text-muted" id="foot"></div>
+</div>

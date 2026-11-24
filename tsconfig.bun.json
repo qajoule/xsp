@@ -1,0 +1,17 @@
+{
+  // Type checks the code that runs on Bun: the unit tests and tools/. The
+  // browser code keeps its own tsconfig.json, so Bun and Node globals such as
+  // process never type check there. The tests import assets/app/, which uses
+  // the DOM, so DOM stays in lib. The type definitions come from .types/
+  // (mise run vendor:types, listed in tools/vendor.toml).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Promise.withResolvers (test/cancellation.test.ts) is ES2024.
+    "lib": ["ES2024", "DOM"],
+    "typeRoots": ["./.types"],
+    "types": ["bun-types"],
+    // @types/node and bun-types import undici-types as a package.
+    "paths": { "undici-types": ["./.types/undici-types/index.d.ts"] }
+  },
+  "include": ["test/**/*.ts", "tools/**/*.ts", "assets/app/params.d.ts"]
+}

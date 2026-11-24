@@ -1,0 +1,114 @@
+# Tool versions and tasks for this site. This file is the source of truth for
+# tool versions; mise.lock records the per-platform checksums.
+#
+# Tasks that run a single command are written inline. mise runs inline tasks
+# with `sh -c` on Linux and `cmd /c` on Windows, so keep each run line free of
+# shell-specific syntax and chain steps with `depends` or a list of commands.
+
+[settings]
+lockfile = true
+lockfile_platforms = ["linux-x64", "windows-x64"]
+# The user-scope config may also install `hugo-extended`, which puts a second
+# `hugo` binary on PATH. Disable it here so the pinned standard build is used.
+# Hugo has shipped a single standard binary since v0.170.0.
+disable_tools = ["hugo-extended"]
+
+[tools]
+hugo = "0.170.1"
+dprint = "0.65.0"
+# Bun runs the unit tests and the tasks that need code (dist check, vendor
+# fetch). It is never part of the site: Hugo's js.Build bundles the browser JS.
+bun = "1.4.5"
+# tsgo (TypeScript 7, native). The release tgz unpacks to package/lib/, and
+# its binary is named `tsc`. It only type checks; Hugo's js.Build bundles.
+"github:microsoft/typescript-go" = { version = "7.0.2", version_prefix = "typescript/v", bin_path = "package/lib" }
+# Tailwind CSS CLI, the standalone binary. It runs outside Hugo: since
+# v0.161.0, css.TailwindCSS only works with the npm package (Node), so the
+# `css` task writes assets/styles/tailwind.css and css.html picks it up.
+"github:tailwindlabs/tailwindcss" = "4.3.5"
+
+[tasks.css]
+description = "Compile assets/styles/main.css with Tailwind into assets/styles/tailwind.css"
+run = "tailwindcss --input assets/styles/main.css --output assets/styles/tailwind.css --silent"
+
+[tasks.build]
+description = "Production build into dist/"
+depends = ["css"]
+run = "hugo build --quiet --cleanDestinationDir --printPathWarnings --printUnusedTemplates --panicOnWarning"
+
+# The first CSS build finishes before the server starts, then the Tailwind
+# watcher and the server run side by side. Hugo reloads the page when the
+# watcher rewrites tailwind.css. --watch=always keeps the watcher alive when
+# mise closes its stdin. Both servers render to memory: hugo server writes
+# to dist/ by default, which would overwrite the production build.
+[tasks.dev]
+description = "Local Hugo server with the Tailwind watcher"
+depends = ["css"]
+run = [{ tasks = ["dev:css", "dev:hugo"] }]
+
+[tasks."dev:css"]
+description = "Tailwind watcher (part of dev)"
+hide = true
+run = "tailwindcss --input assets/styles/main.css --output assets/styles/tailwind.css --watch=always"
+
+[tasks."dev:hugo"]
+description = "Hugo server (part of dev)"
+hide = true
+run = "hugo server --renderToMemory --printPathWarnings --printUnusedTemplates"
+
+# The production build, served from memory. static/_headers (CSP and other
+# headers) only applies on Cloudflare Pages, so check those on a Pages preview.
+[tasks.preview]
+description = "Local Hugo server with the production build (minified, no live reload)"
+depends = ["css"]
+run = "hugo server --renderToMemory --environment production --disableLiveReload --printPathWarnings"
+
+[tasks.check]
+description = "Format check, type check, unit tests, production build, and dist verification"
+depends = ["check:fmt", "check:types", "test", "check:dist"]
+
+[tasks."check:fmt"]
+description = "Report files that dprint would reformat (mise run fmt fixes them)"
+run = "dprint check --list-different"
+
+[tasks.test]
+description = "Unit tests with Bun"
+run = "bun test"
+
+[tasks."check:dist"]
+description = "Production build, then verify dist/ (tools/check-dist.ts)"
+depends = ["build"]
+run = "bun tools/check-dist.ts"
+
+[tasks.vendor]
+description = "Fetch the vendored libraries listed in tools/vendor.toml"
+run = "bun tools/fetch-vendor.ts"
+
+[tasks."vendor:types"]
+description = "Unpack the type definitions for test/ and tools/ into .types/ (only when missing)"
+run = "bun tools/fetch-vendor.ts --types"
+
+[tasks."vendor:emotion"]
+description = "Rebuild assets/vendor/emotion_dict.json from pymlask's emotion lists"
+usage = 'arg "<emotions>" help="The mlask/emotions directory of a pymlask checkout"'
+run = "bun tools/build-emotion-dict.ts {{usage.emotions}}"
+
+[tasks."check:types"]
+description = "Type check assets/app (browser) and test/ and tools/ (Bun) with tsgo"
+depends = ["vendor:types"]
+run = [
+  "tsc --noEmit --project tsconfig.json",
+  "tsc --noEmit --project tsconfig.bun.json",
+]
+
+[tasks."watch:types"]
+description = "Type check assets/app with tsgo on every change"
+run = "tsc --noEmit --project tsconfig.json --watch --preserveWatchOutput"
+
+[tasks.fmt]
+description = "Format source files with dprint"
+run = "dprint fmt"
+
+[tasks.outdated]
+description = "Report newer tool versions without installing them"
+run = "mise outdated --bump"

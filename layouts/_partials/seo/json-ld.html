@@ -1,0 +1,110 @@
+{{- /* GENERATED from seoworkspace/common/layouts/seo/json-ld.html (sha256 e404fd08d44c). Do not edit here: change the source and run tools/sync_common.py --write. */ -}}
+{{- /*
+  JSON-LD graph (schema.org). Called by seo/head.html. Built as data and serialised
+  with jsonify, so quotes, entities and commas are always valid JSON.
+
+  The site-wide entities (WebSite or WebApplication, Organization, Person) are
+  defined on the home page only, and other pages reference them by @id. The
+  WebPage node is defined on every page.
+*/ -}}
+{{- $page := .page -}}
+{{- $seo := or site.Params.seo (dict) -}}
+{{- $pub := or site.Params.publisher (dict) -}}
+{{- $auth := or site.Params.author (dict) -}}
+{{- $home := site.Home.Permalink -}}
+{{- /* Organization and Person ids are based on publisher.url / author.url, so a demo site can
+       reference its parent organization's id instead of defining a new entity. */ -}}
+{{- $siteId := printf "%s#website" $home -}}
+{{- $orgId := printf "%s/#organization" (strings.TrimSuffix "/" (or $pub.url $home)) -}}
+{{- $personId := printf "%s/#author" (strings.TrimSuffix "/" (or $auth.url $home)) -}}
+{{- $hasOrg := false -}}
+{{- if $pub.name }}{{ $hasOrg = true }}{{ end -}}
+{{- $hasPerson := false -}}
+{{- if $auth.name }}{{ $hasPerson = true }}{{ end -}}
+
+{{- $graph := slice -}}
+
+{{- if $page.IsHome -}}
+  {{- /* Site node */ -}}
+  {{- $site := dict
+        "@type" "WebSite"
+        "@id" $siteId
+        "url" $home
+        "name" site.Title
+        "inLanguage" site.Language.Locale -}}
+  {{- with $seo.applicationCategory -}}
+    {{- $site = merge $site (dict
+          "@type" "WebApplication"
+          "applicationCategory" .
+          "operatingSystem" "Web"
+          "isAccessibleForFree" true) -}}
+    {{- with $.imageURL }}{{ $site = merge $site (dict "image" .) }}{{ end -}}
+  {{- end -}}
+  {{- with $seo.description }}{{ $site = merge $site (dict "description" .) }}{{ end -}}
+  {{- if $hasOrg }}{{ $site = merge $site (dict "publisher" (dict "@id" $orgId)) }}{{ end -}}
+  {{- if and $hasPerson (not $hasOrg) }}{{ $site = merge $site (dict "author" (dict "@id" $personId)) }}{{ end -}}
+  {{- $graph = $graph | append $site -}}
+
+  {{- /* Organization */ -}}
+  {{- if $hasOrg -}}
+    {{- $org := dict
+          "@type" "Organization"
+          "@id" $orgId
+          "name" $pub.name
+          "url" (or $pub.url $home) -}}
+    {{- with $pub.logo -}}
+      {{- $logo := dict "@type" "ImageObject" -}}
+      {{- with resources.Get . -}}
+        {{- $logo = merge $logo (dict "url" .Permalink) -}}
+        {{- if in (slice "png" "jpeg" "webp" "gif") .MediaType.SubType -}}
+          {{- $logo = merge $logo (dict "width" .Width "height" .Height) -}}
+        {{- end -}}
+      {{- else -}}
+        {{- $logo = merge $logo (dict "url" (. | absURL)) -}}
+      {{- end -}}
+      {{- $org = merge $org (dict "logo" $logo) -}}
+    {{- end -}}
+    {{- if or $pub.locality $pub.region -}}
+      {{- $address := dict "@type" "PostalAddress" "addressCountry" (or $pub.country "JP") -}}
+      {{- with $pub.locality }}{{ $address = merge $address (dict "addressLocality" .) }}{{ end -}}
+      {{- with $pub.region }}{{ $address = merge $address (dict "addressRegion" .) }}{{ end -}}
+      {{- $org = merge $org (dict "address" $address) -}}
+    {{- end -}}
+    {{- $graph = $graph | append $org -}}
+  {{- end -}}
+
+  {{- /* Person */ -}}
+  {{- if $hasPerson -}}
+    {{- $person := dict
+          "@type" "Person"
+          "@id" $personId
+          "name" $auth.name
+          "url" (or $auth.url $home) -}}
+    {{- with $auth.alternateName }}{{ $person = merge $person (dict "alternateName" .) }}{{ end -}}
+    {{- with $auth.jobTitle }}{{ $person = merge $person (dict "jobTitle" .) }}{{ end -}}
+    {{- with $auth.sameAs }}{{ $person = merge $person (dict "sameAs" .) }}{{ end -}}
+    {{- if $hasOrg }}{{ $person = merge $person (dict "worksFor" (dict "@id" $orgId)) }}{{ end -}}
+    {{- $graph = $graph | append $person -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* WebPage: every page */ -}}
+{{- $webPage := dict
+      "@type" "WebPage"
+      "@id" (printf "%s#webpage" $page.Permalink)
+      "url" $page.Permalink
+      "name" .title
+      "inLanguage" site.Language.Locale
+      "isPartOf" (dict "@id" $siteId) -}}
+{{- with .description }}{{ $webPage = merge $webPage (dict "description" .) }}{{ end -}}
+{{- if $hasOrg }}{{ $webPage = merge $webPage (dict "publisher" (dict "@id" $orgId)) }}{{ end -}}
+{{- if $hasPerson }}{{ $webPage = merge $webPage (dict "author" (dict "@id" $personId)) }}{{ end -}}
+{{- if not $page.Date.IsZero }}
+  {{- $webPage = merge $webPage (dict "datePublished" ($page.Date.Format "2006-01-02T15:04:05Z07:00")) -}}
+{{- end -}}
+{{- if not $page.Lastmod.IsZero }}
+  {{- $webPage = merge $webPage (dict "dateModified" ($page.Lastmod.Format "2006-01-02T15:04:05Z07:00")) -}}
+{{- end -}}
+{{- $graph = $graph | append $webPage -}}
+
+{{- dict "@context" "https://schema.org" "@graph" $graph | jsonify -}}

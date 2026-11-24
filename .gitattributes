@@ -1,0 +1,6 @@
+# 改行を LF に正規化（クロスプラットフォーム）
+* text=auto eol=lf
+
+# バイナリ/生成物（差分・CRLF変換の対象外）
+*.dat.gz binary
+*.min.js -text
